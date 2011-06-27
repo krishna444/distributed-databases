@@ -1,6 +1,5 @@
 package connection;
 
-import java.awt.Frame;
 import java.awt.Toolkit;
 import javax.swing.JFrame;
 

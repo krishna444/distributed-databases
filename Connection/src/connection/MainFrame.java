@@ -50,6 +50,8 @@ public class MainFrame extends JFrame implements Observer {
         this.creator.addObserver(this);
         this.cassandra.addObserver(this);
         this.hbase.addObserver(this);
+        this.mongoDb.addObserver(this);
+        this.hyperTable.addObserver(this);
         this.loader.addObserver(this);
         //Menu Operations
         JMenuBar menuBar = new JMenuBar();
@@ -155,43 +157,15 @@ public class MainFrame extends JFrame implements Observer {
 
             public void actionPerformed(ActionEvent e) {
                 //insert the data into cassandra database
-                Iterator<String[]> iterator = loader.SensorData.iterator();
-                int rowCount = 0;
-                while (iterator.hasNext()) {
-                    String[] data = iterator.next();
-                    System.out.println(rowCount + " temp=" + data[1] + " pressure=" + data[2]);
-                    GlobalObjects.SensorData sensor = new GlobalObjects.SensorData(data[0], Float.parseFloat(data[1]), Float.parseFloat(data[2]));
-                    try {
-                        mongoDb.insertData(sensor);
-                    } catch (Exception ex) {
-                        //
-                        System.out.println(ex.toString());
-                        return;
-                    }
-                    rowCount++;
-                }
+                mongoDb.insert(loader.SensorData, getFileSize(sizeList.getSelectedIndex()));
             }
         });
         JButton insertHyperTable = new JButton("HyperTable");
         insertHyperTable.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                //insert the data into cassandra database
-                Iterator<String[]> iterator = loader.SensorData.iterator();
-                int rowCount = 0;
-                while (iterator.hasNext()) {
-                    String[] data = iterator.next();
-                    System.out.println(rowCount + " temp=" + data[1] + " pressure=" + data[2]);
-                    GlobalObjects.SensorData sensor = new GlobalObjects.SensorData(data[0], Float.parseFloat(data[1]), Float.parseFloat(data[2]));
-                    try {
-                        hyperTable.insertSensorData("row" + rowCount, sensor);
-                    } catch (Exception ex) {
-                        //
-                        System.out.println(ex.toString());
-                        return;
-                    }
-                    rowCount++;
-                }
+                //insert the data into hypertable database
+                hyperTable.insert(loader.SensorData, getFileSize(sizeList.getSelectedIndex()));
             }
         });
         JButton insertHBase = new JButton("HBase");
