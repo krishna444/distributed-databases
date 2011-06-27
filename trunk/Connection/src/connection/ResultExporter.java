@@ -10,22 +10,21 @@ import java.io.IOException;
 public class ResultExporter {
 
     //File name
-    private String fileName="";
     private CSVWriter csvWriter=null;
     /**
      * Constructor
      * @param fileName
      */
-    public ResultExporter(String fileName){
-        this.fileName=fileName;
+    public ResultExporter(){
     }
 
     /**
      * Opens the exporter
      * @throws IOException
+     * @param fileName
      */
-    public void open() throws IOException{
-        this.csvWriter=new CSVWriter(new java.io.FileWriter(this.fileName),',');
+    public void open(String fileName) throws IOException{
+        this.csvWriter=new CSVWriter(new java.io.FileWriter(fileName),',');
     }
 
     /**

@@ -9,7 +9,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
-import javax.swing.JOptionPane;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
@@ -37,13 +36,12 @@ public class CassandraConnector extends Observable implements Runnable {
     private List<String[]> sensorList;
     private int dumpFileSize = 0;
     private String fileName = "result/cassandra";
-
-    //CSV Writer
-    CSVWriter csvWriter=null;
+    ResultExporter resultExporter;
 
     public CassandraConnector() {
         try {
             this.Connect();
+            this.resultExporter = new ResultExporter();
         } catch (TTransportException ex) {
             ex.printStackTrace();
         } catch (TException ex) {
@@ -83,16 +81,16 @@ public class CassandraConnector extends Observable implements Runnable {
         this.sendStatusMessage("Starting insertion of sensor data in Cassandra....");
         int progressInterval = sensorList.size() / 100;
         int sizeInterval = sensorList.size() / this.dumpFileSize;
-        
-//        try{
-//            csvWriter=new CSVWriter(new FileWriter(this.fileName), ',');
-//        }catch(IOException ex){
-//           ex.printStackTrace();
-//        }
-        this.initialiseCSVWriter();
+
+        try {
+            this.resultExporter.open(this.fileName + "." + this.dumpFileSize);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
 
         Iterator<String[]> iterator = sensorList.iterator();
         int rowCount = 0;
+        this.executionTime=0;
         while (iterator.hasNext()) {
             String[] data = iterator.next();
             GlobalObjects.SensorData sensor = new GlobalObjects.SensorData(data[0], Float.parseFloat(data[1]), Float.parseFloat(data[2]));
@@ -104,17 +102,9 @@ public class CassandraConnector extends Observable implements Runnable {
             }
 
             if (rowCount % sizeInterval == 0) {
-                int size=(int) rowCount / sizeInterval;
-                float time=this.executionTime/1000;
-//                csvWriter.writeNext(new String[]{Integer.toString(size), Float.toString(time)});
-                this.insertResult(size, time);
-//                File f=new File("test.txt");
-//                try{
-//                FileWriter writer=new FileWriter(f);
-//                writer.write("Hello this is test");
-//                }catch(Exception ex){
-//
-//                }
+                int size = (int) rowCount / sizeInterval;
+                float time = this.executionTime / 1000;
+                this.resultExporter.writeInsertionInfo(size, time);
             }
 
             if (rowCount % progressInterval == 0) {
@@ -127,7 +117,7 @@ public class CassandraConnector extends Observable implements Runnable {
         this.sendStatusMessage("Time Taken:" + this.executionTime + " Milliseconds.");
 
         try {
-            this.csvWriter.close();
+            this.resultExporter.close();
         } catch (Exception ex) {
             //
         }
@@ -261,39 +251,6 @@ public class CassandraConnector extends Observable implements Runnable {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
-        }
-    }
-
-    /**
-     * Writes the result of insertion operation in csv file
-     */
-    private void insertResult(int size, float time) {
-        this.csvWriter.writeNext(new String[]{Float.toString(size), Float.toString(time)});
-    }
-
-    private void initialiseCSVWriter() {
-        //Create directory
-//        String directory = "Result";
-//        File f = new File(directory);
-//        if (!f.exists()) {
-//            f.mkdir();
-//            f.setWritable(true);
-//        }
-//        //Create file
-//        f = new File(this.fileName);
-//        if (!f.exists()) {
-//            try {
-//                f.createNewFile();
-//            } catch (Exception ex) {
-//                ex.printStackTrace();
-//            }
-//        }
-        //create csv writer
-        this.csvWriter=null;
-        try{
-            this.csvWriter=new CSVWriter(new FileWriter(this.fileName), ',');
-        }catch(IOException ex){
-           ex.printStackTrace();
         }
     }
 }
