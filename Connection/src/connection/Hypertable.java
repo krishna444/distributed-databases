@@ -26,7 +26,8 @@ public class Hypertable extends Observable implements Runnable {
     ResultExporter resultExporter;
 
     public Hypertable() {
-         this.fileName = "result/hypertable";
+        this.fileName = "result/hypertable";
+        this.resultExporter = new ResultExporter();
         try {
             this.client = ThriftClient.create(GlobalObjects.Hypertable.Server, GlobalObjects.Hypertable.Port);
             ns = client.open_namespace(GlobalObjects.Hypertable.namespace);
