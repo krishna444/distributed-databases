@@ -1,6 +1,7 @@
 package connection;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -10,12 +11,21 @@ import java.io.IOException;
 public class ResultExporter {
 
     //File name
-    private CSVWriter csvWriter=null;
+    private CSVWriter csvWriter = null;
+
     /**
      * Constructor
      * @param fileName
      */
-    public ResultExporter(){
+    public ResultExporter() {
+        this.createDirectory();
+    }
+
+    private void createDirectory() {
+        File f = new File("result");
+        if (!f.exists()) {
+            f.mkdir();
+        }
     }
 
     /**
@@ -23,8 +33,8 @@ public class ResultExporter {
      * @throws IOException
      * @param fileName
      */
-    public void open(String fileName) throws IOException{
-        this.csvWriter=new CSVWriter(new java.io.FileWriter(fileName),',');
+    public void open(String fileName) throws IOException {
+        this.csvWriter = new CSVWriter(new java.io.FileWriter(fileName), ',');
     }
 
     /**
@@ -32,7 +42,7 @@ public class ResultExporter {
      * @param megaBytes size in megabytes
      * @param seconds time in seconds
      */
-    public void writeInsertionInfo(int megaBytes,float seconds){
+    public void writeInsertionInfo(int megaBytes, float seconds) {
         this.csvWriter.writeNext(new String[]{Integer.toString(megaBytes), Float.toString(seconds)});
     }
 
@@ -40,8 +50,7 @@ public class ResultExporter {
      * Closes the exporter
      * @throws IOException
      */
-    public void close() throws IOException{
+    public void close() throws IOException {
         this.csvWriter.close();
     }
-
 }
