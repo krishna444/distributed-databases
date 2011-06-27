@@ -6,6 +6,7 @@ import com.mongodb.Mongo;
 import com.mongodb.DB;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -102,11 +103,13 @@ public class MongoDb extends Observable implements Runnable {
      * Inserts sensor data in the database
      */
     public boolean insertData(GlobalObjects.SensorData sensorData){
+        long startTime=Calendar.getInstance().getTimeInMillis();
         BasicDBObject object=new BasicDBObject();
         object.put(GlobalObjects.MongoDb.DateColumn, sensorData.date);
         object.put(GlobalObjects.MongoDb.TemperatureColumn, sensorData.temperature);
         object.put(GlobalObjects.MongoDb.PressureColumn, sensorData.pressure);
         this.collection.insert(object);
+        this.executionTime+=Calendar.getInstance().getTimeInMillis()-startTime;
         return true;
     }
 

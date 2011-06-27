@@ -7,6 +7,7 @@
 package connection;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
@@ -44,7 +45,7 @@ public class Hypertable extends Observable implements Runnable {
     }
 
     public void run() {
-        this.sendStatusMessage("Insertion Started(HBase)...");
+        this.sendStatusMessage("Insertion Started(Hypertable)...");
         int progressInterval = this.sensorList.size() / 100;
         int sizeInterval = this.sensorList.size() / this.dumpFileSize;
         try {
@@ -87,10 +88,12 @@ public class Hypertable extends Observable implements Runnable {
     }
 
     public String insertSensorData(String id, GlobalObjects.SensorData sensorData) throws ClientException, TException {
+        long startTime = Calendar.getInstance().getTimeInMillis();
         String query = "INSERT INTO sensor VALUES(\"" + id + "\",\"date\",\"" + sensorData.date
                 + "\"),(\"" + id + "\",\"temperature\",\"" + sensorData.temperature + "\"),(\"" + id
                 + "\",\"pressure\",\"" + sensorData.pressure + "\")";
         String result = client.hql_query(this.ns, query).toString();
+        this.executionTime += Calendar.getInstance().getTimeInMillis() - startTime;
         return result;
     }
 
