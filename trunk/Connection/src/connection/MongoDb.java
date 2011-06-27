@@ -1,4 +1,3 @@
-
 package connection;
 
 import com.mongodb.BasicDBObject;
@@ -18,8 +17,7 @@ import java.util.Observable;
 public class MongoDb extends Observable implements Runnable {
 
     //this paramter requires for database operations
-    public DBCollection collection=null;
-
+    public DBCollection collection = null;
     private long executionTime;
     private List<String[]> sensorList;
     private int dumpFileSize;
@@ -30,7 +28,8 @@ public class MongoDb extends Observable implements Runnable {
      * Constructor
      */
     public MongoDb() {
-         this.fileName = "result/mongodb";
+        this.fileName = "result/mongodb";
+         this.resultExporter=new ResultExporter();
         this.loadCollection();
     }
 

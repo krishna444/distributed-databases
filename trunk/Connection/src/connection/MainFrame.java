@@ -243,6 +243,12 @@ public class MainFrame extends JFrame implements Observer {
         if (observable == this.hbase) {
             this.appendStatusMessage(object.toString());
         }
+        if(observable==this.mongoDb){
+            this.appendStatusMessage(object.toString());
+        }
+        if(observable==this.hyperTable){
+            this.appendStatusMessage(object.toString());
+        }
     }
 
     /**
