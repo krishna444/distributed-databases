@@ -36,7 +36,10 @@ public class CassandraConnector extends Observable implements Runnable {
     private long executionTime = 0;
     private List<String[]> sensorList;
     private int dumpFileSize = 0;
-    private String fileName = "cassandra.csv";
+    private String fileName = "result/cassandra";
+
+    //CSV Writer
+    CSVWriter csvWriter=null;
 
     public CassandraConnector() {
         try {
@@ -80,15 +83,13 @@ public class CassandraConnector extends Observable implements Runnable {
         this.sendStatusMessage("Starting insertion of sensor data in Cassandra....");
         int progressInterval = sensorList.size() / 100;
         int sizeInterval = sensorList.size() / this.dumpFileSize;
-
-
-        //CSV Writer
-        CSVWriter csvWriter=null;
-        try{
-            csvWriter=new CSVWriter(new FileWriter(this.fileName), ',');
-        }catch(IOException ex){
-           ex.printStackTrace();
-        }
+        
+//        try{
+//            csvWriter=new CSVWriter(new FileWriter(this.fileName), ',');
+//        }catch(IOException ex){
+//           ex.printStackTrace();
+//        }
+        this.initialiseCSVWriter();
 
         Iterator<String[]> iterator = sensorList.iterator();
         int rowCount = 0;
@@ -105,14 +106,15 @@ public class CassandraConnector extends Observable implements Runnable {
             if (rowCount % sizeInterval == 0) {
                 int size=(int) rowCount / sizeInterval;
                 float time=this.executionTime/1000;
-                csvWriter.writeNext(new String[]{Integer.toString(size), Float.toString(time)});
-                File f=new File("test.txt");
-                try{
-                FileWriter writer=new FileWriter(f);
-                writer.write("Hello this is test");
-                }catch(Exception ex){
-                    
-                }
+//                csvWriter.writeNext(new String[]{Integer.toString(size), Float.toString(time)});
+                this.insertResult(size, time);
+//                File f=new File("test.txt");
+//                try{
+//                FileWriter writer=new FileWriter(f);
+//                writer.write("Hello this is test");
+//                }catch(Exception ex){
+//
+//                }
             }
 
             if (rowCount % progressInterval == 0) {
@@ -125,7 +127,7 @@ public class CassandraConnector extends Observable implements Runnable {
         this.sendStatusMessage("Time Taken:" + this.executionTime + " Milliseconds.");
 
         try {
-            csvWriter.close();
+            this.csvWriter.close();
         } catch (Exception ex) {
             //
         }
@@ -265,10 +267,8 @@ public class CassandraConnector extends Observable implements Runnable {
     /**
      * Writes the result of insertion operation in csv file
      */
-    private void insertResult(float size, float time) {
-        System.out.println("Going to write....Filesize=" + size + " time=" + time);
-        //this.csvWriter.writeNext(new String[]{"5",Float.toString(size), Float.toString(time)});
-        System.out.println("Hurry I am here");
+    private void insertResult(int size, float time) {
+        this.csvWriter.writeNext(new String[]{Float.toString(size), Float.toString(time)});
     }
 
     private void initialiseCSVWriter() {
@@ -289,11 +289,11 @@ public class CassandraConnector extends Observable implements Runnable {
 //            }
 //        }
         //create csv writer
-//        this.csvWriter=null;
-//        try{
-//            this.csvWriter=new CSVWriter(new FileWriter(this.fileName), ',');
-//        }catch(IOException ex){
-//           ex.printStackTrace();
-//        }
+        this.csvWriter=null;
+        try{
+            this.csvWriter=new CSVWriter(new FileWriter(this.fileName), ',');
+        }catch(IOException ex){
+           ex.printStackTrace();
+        }
     }
 }
