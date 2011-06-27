@@ -8,6 +8,7 @@ package connection;
  * @author Dhanpati
  */
 public class GlobalObjects {
+
     public static class SensorData{
         public String date;
         public float temperature;
@@ -70,6 +71,5 @@ public class GlobalObjects {
         public static String dateColumn="Date";
         public static String temperatureColumn="Temperature";
         public static String pressureColumn="Pressure";
-    }
-
+    }   
 }

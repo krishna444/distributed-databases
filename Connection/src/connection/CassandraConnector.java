@@ -1,8 +1,6 @@
 package connection;
 
-import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -233,24 +231,5 @@ public class CassandraConnector extends Observable implements Runnable {
         this.notifyObservers(message);
     }
 
-    /**
-     * Checks the availabilities of files and directories
-     */
-    private void checkResultIO() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        Calendar calendar = Calendar.getInstance();
-        String directoryName = "Result_" + dateFormat.format(calendar.getTime());
-        File f = new File(directoryName);
-        if (!f.exists()) {
-            f.mkdir();
-        }
-        f = new File(directoryName + "/Cassandra.result");
-        if (!f.exists()) {
-            try {
-                f.createNewFile();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
+   
 }
