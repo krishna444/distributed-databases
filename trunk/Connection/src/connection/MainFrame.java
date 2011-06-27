@@ -49,6 +49,7 @@ public class MainFrame extends JFrame implements Observer {
     private void initialiseComponents() {
         this.creator.addObserver(this);
         this.cassandra.addObserver(this);
+        this.hbase.addObserver(this);
         this.loader.addObserver(this);
         //Menu Operations
         JMenuBar menuBar = new JMenuBar();
@@ -146,7 +147,7 @@ public class MainFrame extends JFrame implements Observer {
 
             public void actionPerformed(ActionEvent e) {
                 //insert the data into cassandra database
-                cassandra.insert(loader.SensorData,getFileSize(sizeList.getSelectedIndex()));
+                cassandra.insert(loader.SensorData, getFileSize(sizeList.getSelectedIndex()));
             }
         });
         JButton insertMongoDb = new JButton("MongoDb");
@@ -197,21 +198,8 @@ public class MainFrame extends JFrame implements Observer {
         insertHBase.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                Iterator<String[]> iterator = loader.SensorData.iterator();
-                int rowCount = 0;
-                while (iterator.hasNext()) {
-                    String[] data = iterator.next();
-                    System.out.println(rowCount + " temp=" + data[1] + " pressure=" + data[2]);
-                    GlobalObjects.SensorData sensor = new GlobalObjects.SensorData(data[0], Float.parseFloat(data[1]), Float.parseFloat(data[2]));
-                    try {
-                        hbase.insertSensorData("row" + rowCount, sensor);
-                    } catch (Exception ex) {
-                        //
-                        System.out.println(ex.toString());
-                        return;
-                    }
-                    rowCount++;
-                }
+                //insert
+                hbase.insert(loader.SensorData, getFileSize(sizeList.getSelectedIndex()));
             }
         });
 
@@ -278,6 +266,9 @@ public class MainFrame extends JFrame implements Observer {
         if (observable == this.loader) {
             this.appendStatusMessage(object.toString());
         }
+        if (observable == this.hbase) {
+            this.appendStatusMessage(object.toString());
+        }
     }
 
     /**
@@ -318,29 +309,29 @@ public class MainFrame extends JFrame implements Observer {
      * @param index index
      * @return file size
      */
-    private int getFileSize(int index){
-        int fileSize=0;
-        switch(index){
+    private int getFileSize(int index) {
+        int fileSize = 0;
+        switch (index) {
             case 0:
-                fileSize=32;
+                fileSize = 32;
                 break;
             case 1:
-                fileSize=64;
+                fileSize = 64;
                 break;
             case 2:
-                fileSize=128;
+                fileSize = 128;
                 break;
             case 3:
-                fileSize=256;
+                fileSize = 256;
                 break;
             case 4:
-                fileSize=512;
+                fileSize = 512;
                 break;
             case 5:
-                fileSize=1024;
+                fileSize = 1024;
                 break;
             default:
-                fileSize=32;
+                fileSize = 32;
                 break;
         }
         return fileSize;

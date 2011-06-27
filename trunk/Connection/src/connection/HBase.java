@@ -24,6 +24,7 @@ public class HBase extends Observable implements Runnable {
 
     public HBase() {
         this.fileName = "result/hbase";
+        this.resultExporter = new ResultExporter();
         try {
             this.table = new HTable(GlobalObjects.Hbase.tableName);
         } catch (Exception ex) {
@@ -34,7 +35,7 @@ public class HBase extends Observable implements Runnable {
     public void insert(List<String[]> sensorList, int fileSize) {
         this.sensorList = sensorList;
         this.dumpFileSize = fileSize;
-        Thread insertThread = new Thread(this, "Insert Data in Cassandra");
+        Thread insertThread = new Thread(this, "Insert Data in HBase");
         insertThread.start();
     }
 
@@ -67,12 +68,18 @@ public class HBase extends Observable implements Runnable {
                 this.sendStatusMessage(completed + "% completed(Hbase).");
             }
             if (rowCount % sizeInterval == 0) {
-                this.resultExporter.writeInsertionInfo(rowCount / sizeInterval, this.executionTime/1000);
+                this.resultExporter.writeInsertionInfo(rowCount / sizeInterval, this.executionTime / 1000);
             }
 
             rowCount++;
         }
-
+        this.sendStatusMessage("Successsfully Finised(HBase)");
+        this.sendStatusMessage("Time Taken:" + this.executionTime + " Milliseconds.");
+        try{
+        this.resultExporter.close();
+        }catch(IOException ex){
+            ex.printStackTrace();
+        }
     }
 
     public boolean insertSensorData(String row, GlobalObjects.SensorData sensor) throws IOException {
