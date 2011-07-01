@@ -10,6 +10,8 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.RowFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 /**
@@ -78,9 +80,9 @@ public class HBase extends Observable implements Runnable {
         }
         this.sendStatusMessage("Successsfully Finised(HBase)");
         this.sendStatusMessage("Time Taken:" + this.executionTime + " Milliseconds.");
-        try{
-        this.resultExporter.close();
-        }catch(IOException ex){
+        try {
+            this.resultExporter.close();
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -102,22 +104,28 @@ public class HBase extends Observable implements Runnable {
         this.executionTime += Calendar.getInstance().getTimeInMillis() - startTime;
         return true;
     }
+
     /**
      * Fetches the data
      * @param fetchLimit Limit of fetching data
      * @return time required to fetch
      * @throws IOException
      */
-    public long fetchData(int fetchLimit) throws IOException{
-        long fetchTime=0;
-        long startTime=Calendar.getInstance().getTimeInMillis();
-        Scan s=new Scan();
+    public long fetchData(int fetchLimit) throws IOException {
+        long fetchTime = 0;
+        long startTime = Calendar.getInstance().getTimeInMillis();
+        Scan s = new Scan();
         s.addColumn(Bytes.toBytes(GlobalObjects.Hbase.columnFamily), Bytes.toBytes(GlobalObjects.Hbase.temperatureColumn));
-        ResultScanner scanner=this.table.getScanner(s);
-        for(Result rr:scanner){
-            System.out.println("Row Found:"+rr);
+        ResultScanner scanner = this.table.getScanner(s);
+        int count = 0;
+        for (Result rr : scanner) {
+            System.out.println("Row Found:" + rr);
+            if (count++ > fetchLimit) {
+                break;
+            }
         }
-        fetchTime=Calendar.getInstance().getTimeInMillis()-startTime;
+        fetchTime = Calendar.getInstance().getTimeInMillis() - startTime;
+        System.out.println("Execution Time="+fetchTime+"milliseconds.");
         return fetchTime;
     }
 
@@ -125,6 +133,4 @@ public class HBase extends Observable implements Runnable {
         this.setChanged();
         this.notifyObservers(message);
     }
-
-
 }
