@@ -102,13 +102,15 @@ public class Hypertable extends Observable implements Runnable {
         ScanSpec scanSpec=new ScanSpec();
         long scanner=this.client.open_scanner(ns, GlobalObjects.Hypertable.tableName, scanSpec, true);
         List<Cell> cells=client.next_cells(scanner);
-        while(cells.size()>0){
+        int count=0;
+        while(cells.size()>0 && count++<fetchLimit){
             System.out.println(cells.toString());
             cells=client.next_cells(scanner);
         }
         this.client.close_scanner(scanner);
-
-        return Calendar.getInstance().getTimeInMillis()-fetchTime;
+        fetchTime=Calendar.getInstance().getTimeInMillis()-fetchTime;
+        System.out.println("Execution Time="+fetchTime+"milliseconds.");
+        return fetchTime;
     }
 
     private void sendStatusMessage(String message) {

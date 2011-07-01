@@ -193,13 +193,17 @@ public class MainFrame extends JFrame implements Observer {
         cassandraRadioButton.setActionCommand("cassandra");
         JRadioButton mongoDbRadioButton = new JRadioButton("Mongo");
         mongoDbRadioButton.setSelected(false);
+        mongoDbRadioButton.setActionCommand("mongodb");
         JRadioButton hyperTableRadioButton = new JRadioButton("Hypertable");
         hyperTableRadioButton.setSelected(false);
+        hyperTableRadioButton.setActionCommand("hypertable");
         JRadioButton hbaseRadioButton = new JRadioButton("HBase");
         hbaseRadioButton.setSelected(false);
+        hbaseRadioButton.setActionCommand("hbase");
         group.add(cassandraRadioButton);
         group.add(mongoDbRadioButton);
         group.add(hyperTableRadioButton);
+        group.add(hbaseRadioButton);
         queryButtonPanel.add(cassandraRadioButton);
         queryButtonPanel.add(mongoDbRadioButton);
         queryButtonPanel.add(hyperTableRadioButton);
@@ -210,14 +214,23 @@ public class MainFrame extends JFrame implements Observer {
         JButton runButton = new JButton("Run");
 
         runButton.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
-                if (group.getSelection().getActionCommand().equals("cassandra")) {
-                    System.out.println("I am inside cassandra");
-                    int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
-                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.CASSANDRA, 90000);
+
+                int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
+                if (group.getSelection().getActionCommand().equals("cassandra")) {                    
+                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.CASSANDRA, 1000);
+                    thread.start();
+                }else if(group.getSelection().getActionCommand().equals("mongodb")){
+                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.MONGODB, 1000);
+                    thread.start();
+                }else if(group.getSelection().getActionCommand().equals("hypertable")){
+                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.HYPERTABLE, 1000);
+                    thread.start();
+                }else if(group.getSelection().getActionCommand().equals("hbase")){
+                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.HBASE, 1000);
                     thread.start();
                 }
+
             }
         });
         queryButtonPanel.add(labelClient);

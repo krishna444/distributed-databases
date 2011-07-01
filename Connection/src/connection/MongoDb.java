@@ -117,13 +117,15 @@ public class MongoDb extends Observable implements Runnable {
     public long fetchData(int fetchLimit) {
         long fetchTime = Calendar.getInstance().getTimeInMillis();
         DBCursor cursor = this.collection.find();
-        while (cursor.hasNext()) {
+        int count = 0;
+        while (cursor.hasNext() && count++ < fetchLimit) {
             String date = cursor.next().get(GlobalObjects.MongoDb.DateColumn).toString();
             String pressure = cursor.next().get(GlobalObjects.MongoDb.TemperatureColumn).toString();
             String temperature = cursor.next().get(GlobalObjects.MongoDb.PressureColumn).toString();
             System.out.println("Date=" + date + " Press=" + pressure + " Temp=" + temperature);
         }
-        fetchTime = fetchTime - Calendar.getInstance().getTimeInMillis();
+        fetchTime = Calendar.getInstance().getTimeInMillis() - fetchTime;
+        System.out.println("Execution Time:" + fetchTime + "milliseconds.");
         return fetchTime;
     }
 
