@@ -1,12 +1,13 @@
 package connection;
 
+import connection.Access.AccessDataThread;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.acl.Group;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Iterator;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.BorderFactory;
@@ -186,27 +187,37 @@ public class MainFrame extends JFrame implements Observer {
         topPanel.add(insertButtonPanel);
 
         JPanel queryButtonPanel = new JPanel(new FlowLayout());
-        ButtonGroup group = new ButtonGroup();
+        final ButtonGroup group = new ButtonGroup();
         JRadioButton cassandraRadioButton = new JRadioButton("Cassandra");
         cassandraRadioButton.setSelected(true);
+        cassandraRadioButton.setActionCommand("cassandra");
         JRadioButton mongoDbRadioButton = new JRadioButton("Mongo");
         mongoDbRadioButton.setSelected(false);
-        JRadioButton sqlClusterRadioButton = new JRadioButton("Hypertable");
-        sqlClusterRadioButton.setSelected(false);
+        JRadioButton hyperTableRadioButton = new JRadioButton("Hypertable");
+        hyperTableRadioButton.setSelected(false);
+        JRadioButton hbaseRadioButton = new JRadioButton("HBase");
+        hbaseRadioButton.setSelected(false);
         group.add(cassandraRadioButton);
         group.add(mongoDbRadioButton);
-        group.add(sqlClusterRadioButton);
+        group.add(hyperTableRadioButton);
         queryButtonPanel.add(cassandraRadioButton);
         queryButtonPanel.add(mongoDbRadioButton);
-        queryButtonPanel.add(sqlClusterRadioButton);
+        queryButtonPanel.add(hyperTableRadioButton);
+        queryButtonPanel.add(hbaseRadioButton);
         JLabel labelClient = new JLabel("Clients");
         Object[] values = {10, 100, 500, 1000, 5000, 10000};
-        JComboBox comboBox = new JComboBox(values);
+        final JComboBox comboBox = new JComboBox(values);
         JButton runButton = new JButton("Run");
+
         runButton.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                throw new UnsupportedOperationException("Not supported yet.");
+                if (group.getSelection().getActionCommand().equals("cassandra")) {
+                    System.out.println("I am inside cassandra");
+                    int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
+                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.CASSANDRA, 90000);
+                    thread.start();
+                }
             }
         });
         queryButtonPanel.add(labelClient);
@@ -243,10 +254,10 @@ public class MainFrame extends JFrame implements Observer {
         if (observable == this.hbase) {
             this.appendStatusMessage(object.toString());
         }
-        if(observable==this.mongoDb){
+        if (observable == this.mongoDb) {
             this.appendStatusMessage(object.toString());
         }
-        if(observable==this.hyperTable){
+        if (observable == this.hyperTable) {
             this.appendStatusMessage(object.toString());
         }
     }

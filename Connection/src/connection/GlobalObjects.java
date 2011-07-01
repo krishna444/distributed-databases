@@ -17,6 +17,7 @@ public class GlobalObjects {
          * Constructors
          */
         public SensorData(){
+
         }
         /*
          * Constructors
@@ -71,5 +72,12 @@ public class GlobalObjects {
         public static String dateColumn="Date";
         public static String temperatureColumn="Temperature";
         public static String pressureColumn="Pressure";
-    }   
+    }
+
+    public enum DatabaseType{
+        CASSANDRA,
+        MONGODB,
+        HYPERTABLE,
+        HBASE
+    }
 }

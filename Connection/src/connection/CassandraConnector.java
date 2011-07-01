@@ -1,19 +1,26 @@
 package connection;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
+import java.util.Random;
+import org.apache.cassandra.avro.ColumnOrSuperColumn;
+import org.apache.cassandra.avro.SlicePredicate;
+import org.apache.cassandra.avro.SliceRange;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
+import org.apache.cassandra.thrift.KeyRange;
+import org.apache.cassandra.thrift.KeySlice;
 import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.TimedOutException;
+import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -88,7 +95,7 @@ public class CassandraConnector extends Observable implements Runnable {
 
         Iterator<String[]> iterator = sensorList.iterator();
         int rowCount = 0;
-        this.executionTime=0;
+        this.executionTime = 0;
         while (iterator.hasNext()) {
             String[] data = iterator.next();
             GlobalObjects.SensorData sensor = new GlobalObjects.SensorData(data[0], Float.parseFloat(data[1]), Float.parseFloat(data[2]));
@@ -173,6 +180,42 @@ public class CassandraConnector extends Observable implements Runnable {
         return value;
     }
 
+    public long fetchData(int fetchLimit) {
+        long executionTime = 0;
+        long startTime = Calendar.getInstance().getTimeInMillis();
+        org.apache.cassandra.thrift.SlicePredicate predicate = new org.apache.cassandra.thrift.SlicePredicate();
+        org.apache.cassandra.thrift.SliceRange sliceRange = new org.apache.cassandra.thrift.SliceRange();
+        sliceRange.setStart(new byte[0]);
+        sliceRange.setFinish(new byte[0]);
+        predicate.slice_range = sliceRange;
+
+        KeyRange keyRange = new KeyRange(fetchLimit);
+        keyRange.setStart_key(MyByteBuffer.str_to_bb("1"));
+        keyRange.setEnd_key(MyByteBuffer.str_to_bb(""));
+
+        ColumnParent parent = new ColumnParent(GlobalObjects.Cassandra.ColumnFamily);
+        List<KeySlice> keyList=new ArrayList<KeySlice>();
+        try {
+            keyList = this.client.get_range_slices(parent, predicate, keyRange, ConsistencyLevel.ONE);
+        } catch (InvalidRequestException ex) {
+            //
+        } catch (UnavailableException ex) {
+        } catch (TimedOutException ex) {
+        } catch (TException ex) {
+        }
+
+        for(KeySlice keySlice:keyList){
+            List<org.apache.cassandra.thrift.ColumnOrSuperColumn> columns= keySlice.getColumns();
+            for(org.apache.cassandra.thrift.ColumnOrSuperColumn col:columns){
+                System.out.println(col.column.name+":"+col.column.value);
+            }            
+        }
+        executionTime = Calendar.getInstance().getTimeInMillis() - startTime;
+        System.out.println("Execution Time:"+executionTime);
+        return executionTime;
+
+    }
+
 
     /*
      * Creates new namespace
@@ -230,6 +273,4 @@ public class CassandraConnector extends Observable implements Runnable {
         this.setChanged();
         this.notifyObservers(message);
     }
-
-   
 }

@@ -4,6 +4,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 import com.mongodb.DB;
+import com.mongodb.DBCursor;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
@@ -30,22 +31,22 @@ public class MongoDb extends Observable implements Runnable {
      */
     public MongoDb() {
         this.fileName = "result/mongodb";
-         this.resultExporter=new ResultExporter();
+        this.resultExporter = new ResultExporter();
         this.loadCollection();
     }
 
     /*
      * Loads the collection of mongodb
      */
-    private void loadCollection(){
-        Mongo m=null;
-        try{
-            m=new Mongo(GlobalObjects.MongoDb.Server,GlobalObjects.MongoDb.Port);
-        }catch(UnknownHostException ex){
+    private void loadCollection() {
+        Mongo m = null;
+        try {
+            m = new Mongo(GlobalObjects.MongoDb.Server, GlobalObjects.MongoDb.Port);
+        } catch (UnknownHostException ex) {
             ex.printStackTrace();
         }
-        DB db=m.getDB(GlobalObjects.MongoDb.Database);
-        this.collection= db.getCollection(GlobalObjects.MongoDb.CollectionName);
+        DB db = m.getDB(GlobalObjects.MongoDb.Database);
+        this.collection = db.getCollection(GlobalObjects.MongoDb.CollectionName);
     }
 
     public void insert(List<String[]> sensorList, int fileSize) {
@@ -91,9 +92,9 @@ public class MongoDb extends Observable implements Runnable {
         }
         this.sendStatusMessage("Successsfully Finised(MongoDb)");
         this.sendStatusMessage("Time Taken:" + this.executionTime + " Milliseconds.");
-        try{
-        this.resultExporter.close();
-        }catch(IOException ex){
+        try {
+            this.resultExporter.close();
+        } catch (IOException ex) {
             ex.printStackTrace();
         }
     }
@@ -102,20 +103,32 @@ public class MongoDb extends Observable implements Runnable {
     /*
      * Inserts sensor data in the database
      */
-    public boolean insertData(GlobalObjects.SensorData sensorData){
-        long startTime=Calendar.getInstance().getTimeInMillis();
-        BasicDBObject object=new BasicDBObject();
+    public boolean insertData(GlobalObjects.SensorData sensorData) {
+        long startTime = Calendar.getInstance().getTimeInMillis();
+        BasicDBObject object = new BasicDBObject();
         object.put(GlobalObjects.MongoDb.DateColumn, sensorData.date);
         object.put(GlobalObjects.MongoDb.TemperatureColumn, sensorData.temperature);
         object.put(GlobalObjects.MongoDb.PressureColumn, sensorData.pressure);
         this.collection.insert(object);
-        this.executionTime+=Calendar.getInstance().getTimeInMillis()-startTime;
+        this.executionTime += Calendar.getInstance().getTimeInMillis() - startTime;
         return true;
+    }
+
+    public long fetchData(int fetchLimit) {
+        long fetchTime = Calendar.getInstance().getTimeInMillis();
+        DBCursor cursor = this.collection.find();
+        while (cursor.hasNext()) {
+            String date = cursor.next().get(GlobalObjects.MongoDb.DateColumn).toString();
+            String pressure = cursor.next().get(GlobalObjects.MongoDb.TemperatureColumn).toString();
+            String temperature = cursor.next().get(GlobalObjects.MongoDb.PressureColumn).toString();
+            System.out.println("Date=" + date + " Press=" + pressure + " Temp=" + temperature);
+        }
+        fetchTime = fetchTime - Calendar.getInstance().getTimeInMillis();
+        return fetchTime;
     }
 
     private void sendStatusMessage(String message) {
         this.setChanged();
         this.notifyObservers(message);
     }
-
 }

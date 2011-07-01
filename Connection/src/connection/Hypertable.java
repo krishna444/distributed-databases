@@ -97,6 +97,20 @@ public class Hypertable extends Observable implements Runnable {
         return result;
     }
 
+    public long fetchData(int fetchLimit) throws ClientException,TException{
+        long fetchTime=Calendar.getInstance().getTimeInMillis();
+        ScanSpec scanSpec=new ScanSpec();
+        long scanner=this.client.open_scanner(ns, GlobalObjects.Hypertable.tableName, scanSpec, true);
+        List<Cell> cells=client.next_cells(scanner);
+        while(cells.size()>0){
+            System.out.println(cells.toString());
+            cells=client.next_cells(scanner);
+        }
+        this.client.close_scanner(scanner);
+
+        return Calendar.getInstance().getTimeInMillis()-fetchTime;
+    }
+
     private void sendStatusMessage(String message) {
         this.setChanged();
         this.notifyObservers(message);
