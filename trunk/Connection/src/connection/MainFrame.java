@@ -224,7 +224,7 @@ public class MainFrame extends JFrame implements Observer {
                     AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.MONGODB, 1000);
                     thread.start();
                 }else if(group.getSelection().getActionCommand().equals("hypertable")){
-                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.HYPERTABLE, 1000);
+                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.HYPERTABLE, 10);
                     thread.start();
                 }else if(group.getSelection().getActionCommand().equals("hbase")){
                     AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.HBASE, 1000);
