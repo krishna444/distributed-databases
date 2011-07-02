@@ -70,10 +70,16 @@ public class AccessDataThread extends Thread {
     }
 
     private void initialiseDatabases() {
-        this.cassandra = new CassandraConnector();
-        this.mongoDb = new MongoDb();
-        this.hyperTable = new Hypertable();
-        this.hbase = new HBase();
+        if(this.databaseType==DatabaseType.CASSANDRA)
+            this.cassandra = new CassandraConnector();
+        else if(this.databaseType==DatabaseType.MONGODB)
+            this.mongoDb = new MongoDb();
+        else if(this.databaseType==DatabaseType.HYPERTABLE)
+            this.hyperTable = new Hypertable();
+        else if(this.databaseType==DatabaseType.HBASE)
+            this.hbase = new HBase();
+        else
+            this.hbase=new CassandraConnector();
     }
 
     /**
