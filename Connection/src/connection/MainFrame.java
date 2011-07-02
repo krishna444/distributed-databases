@@ -47,7 +47,7 @@ public class MainFrame extends JFrame implements Observer {
     DumpFileLoader loader = new DumpFileLoader();
     JTextArea resultTextArea;
     ResultExporter exporter;
-    String fetchFile = "Fetch.csv";
+    String fetchFile = "result/fetch.csv";
 
     public MainFrame() {
         super("Database Test Application");
@@ -226,20 +226,23 @@ public class MainFrame extends JFrame implements Observer {
             public void actionPerformed(ActionEvent e) {
 
                 int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
+                GlobalObjects.DatabaseType databaseType=null;
+                int fetchLength=1000;
                 if (group.getSelection().getActionCommand().equals("cassandra")) {
-                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.CASSANDRA, 1000);
-                    thread.start();
+                    databaseType=GlobalObjects.DatabaseType.CASSANDRA;
                 } else if (group.getSelection().getActionCommand().equals("mongodb")) {
-                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.MONGODB, 1000);
-                    thread.start();
+                    databaseType=GlobalObjects.DatabaseType.MONGODB;
                 } else if (group.getSelection().getActionCommand().equals("hypertable")) {
-                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.HYPERTABLE, 10);
-                    thread.start();
+                    databaseType=GlobalObjects.DatabaseType.HYPERTABLE;
                 } else if (group.getSelection().getActionCommand().equals("hbase")) {
-                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.HBASE, 1000);
-                    thread.start();
+                    databaseType=GlobalObjects.DatabaseType.HBASE;
                 }
 
+                try{
+                startAccessThreads(databaseType, threads, fetchLength);
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
             }
         });
         queryButtonPanel.add(labelClient);
@@ -315,6 +318,7 @@ public class MainFrame extends JFrame implements Observer {
                 }
                 try {
                     this.exporter.open(this.fetchFile);
+                    this.exporter.writeFetchInfo(databaseType, fetchLimit, averageTime, minimumTime, maximumTime);
                 } catch (IOException ex) {
                     throw ex;
                 } finally {
