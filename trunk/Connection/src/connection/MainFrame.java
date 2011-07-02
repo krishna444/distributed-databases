@@ -5,11 +5,16 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.security.acl.Group;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -41,9 +46,12 @@ public class MainFrame extends JFrame implements Observer {
     dumpFileCreator creator = new dumpFileCreator();
     DumpFileLoader loader = new DumpFileLoader();
     JTextArea resultTextArea;
+    ResultExporter exporter;
+    String fetchFile = "Fetch.csv";
 
     public MainFrame() {
         super("Database Test Application");
+        this.exporter = new ResultExporter();
         this.initialiseComponents();
     }
 
@@ -214,20 +222,21 @@ public class MainFrame extends JFrame implements Observer {
         JButton runButton = new JButton("Run");
 
         runButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
 
                 int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
-                if (group.getSelection().getActionCommand().equals("cassandra")) {                    
+                if (group.getSelection().getActionCommand().equals("cassandra")) {
                     AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.CASSANDRA, 1000);
                     thread.start();
-                }else if(group.getSelection().getActionCommand().equals("mongodb")){
-                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.MONGODB, 1000);
+                } else if (group.getSelection().getActionCommand().equals("mongodb")) {
+                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.MONGODB, 1000);
                     thread.start();
-                }else if(group.getSelection().getActionCommand().equals("hypertable")){
-                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.HYPERTABLE, 10);
+                } else if (group.getSelection().getActionCommand().equals("hypertable")) {
+                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.HYPERTABLE, 10);
                     thread.start();
-                }else if(group.getSelection().getActionCommand().equals("hbase")){
-                    AccessDataThread thread=new AccessDataThread(GlobalObjects.DatabaseType.HBASE, 1000);
+                } else if (group.getSelection().getActionCommand().equals("hbase")) {
+                    AccessDataThread thread = new AccessDataThread(GlobalObjects.DatabaseType.HBASE, 1000);
                     thread.start();
                 }
 
@@ -272,6 +281,46 @@ public class MainFrame extends JFrame implements Observer {
         }
         if (observable == this.hyperTable) {
             this.appendStatusMessage(object.toString());
+        }
+    }
+
+    private void startAccessThreads(GlobalObjects.DatabaseType databaseType, int threadsLength, int fetchLimit)
+            throws InterruptedException, IOException {
+        ExecutorService executer = Executors.newCachedThreadPool();
+        Collection<AccessDataThread> threads = new ArrayList<AccessDataThread>();
+        for (int i = 0; i < threadsLength; i++) {
+            threads.add(new AccessDataThread(databaseType, fetchLimit));
+        }
+        for (AccessDataThread thread : threads) {
+            executer.execute(thread);
+        }
+        executer.shutdown();
+
+        boolean tasksEnded = executer.awaitTermination(1, TimeUnit.DAYS);
+        if (tasksEnded) {
+            long minimumTime = Long.MAX_VALUE;
+            long averageTime = 0;
+            long maximumTime = Long.MIN_VALUE;
+
+            for (AccessDataThread thread : threads) {
+                long fetchTime = thread.getFetchTime();
+                //get average
+                averageTime += thread.getFetchTime() / threads.size();
+                //get minimum
+                if (fetchTime < minimumTime) {
+                    minimumTime = fetchTime;
+                }
+                if (fetchTime > maximumTime) {
+                    maximumTime = fetchTime;
+                }
+                try {
+                    this.exporter.open(this.fetchFile);
+                } catch (IOException ex) {
+                    throw ex;
+                } finally {
+                    this.exporter.close();
+                }
+            }
         }
     }
 

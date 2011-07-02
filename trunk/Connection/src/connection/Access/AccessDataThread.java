@@ -16,7 +16,7 @@ import org.hypertable.thriftgen.ClientException;
 public class AccessDataThread extends Thread {
 
     private DatabaseType databaseType;
-    private int fetchTime = 0;
+    private long fetchTime = 0;
     //Databases
     private CassandraConnector cassandra;
     private MongoDb mongoDb;
@@ -40,27 +40,27 @@ public class AccessDataThread extends Thread {
     public void run() {
         switch (this.databaseType) {
             case CASSANDRA:
-                this.cassandra.fetchData(this.fetchLimit);
+                this.fetchTime = this.cassandra.fetchData(this.fetchLimit);
                 break;
             case MONGODB:
-                this.mongoDb.fetchData(this.fetchLimit);
+                this.fetchTime = this.mongoDb.fetchData(this.fetchLimit);
                 break;
             case HBASE:
                 try {
-                    this.hbase.fetchData(this.fetchLimit);
+                    this.fetchTime = this.hbase.fetchData(this.fetchLimit);
                 } catch (IOException ex) {
                     //
                 }
                 break;
             case HYPERTABLE:
                 try {
-                    this.hyperTable.fetchData(this.fetchLimit);
+                    this.fetchTime = this.hyperTable.fetchData(this.fetchLimit);
                 } catch (ClientException ex) {
                 } catch (TException ex) {
                 }
                 break;
             default:
-                this.cassandra.fetchData(this.fetchLimit);
+                this.fetchTime=this.cassandra.fetchData(this.fetchLimit);
                 break;
         }
     }
@@ -74,5 +74,13 @@ public class AccessDataThread extends Thread {
         this.mongoDb = new MongoDb();
         this.hyperTable = new Hypertable();
         this.hbase = new HBase();
+    }
+
+    /**
+     * Gets fetch time
+     * @return fetch time
+     */
+    public long getFetchTime(){
+        return this.fetchTime;
     }
 }

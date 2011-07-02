@@ -46,6 +46,12 @@ public class ResultExporter {
         this.csvWriter.writeNext(new String[]{Integer.toString(megaBytes), Float.toString(seconds)});
     }
 
+    public void writeFetchInfo(GlobalObjects.DatabaseType databaseType, int dataLength, long averageFetchTime,
+            long minimunTime, long maximumTime) {
+        this.csvWriter.writeNext(new String[]{databaseType.toString(), Integer.toString(dataLength),
+                    Long.toString(minimunTime), Long.toString(averageFetchTime), Long.toString(maximumTime)});
+    }
+
     /**
      * Closes the exporter
      * @throws IOException
