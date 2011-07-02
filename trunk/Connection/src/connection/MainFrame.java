@@ -47,7 +47,7 @@ public class MainFrame extends JFrame implements Observer {
     DumpFileLoader loader = new DumpFileLoader();
     JTextArea resultTextArea;
     ResultExporter exporter;
-    String fetchFile = "result/fetch.csv";
+    String fetchFile = "result/fetch";
 
     public MainFrame() {
         super("Database Test Application");
@@ -317,7 +317,7 @@ public class MainFrame extends JFrame implements Observer {
                     maximumTime = fetchTime;
                 }
                 try {
-                    this.exporter.open(this.fetchFile);
+                    this.exporter.open(this.fetchFile+"."+databaseType.toString());
                     this.exporter.writeFetchInfo(databaseType, fetchLimit, averageTime, minimumTime, maximumTime);
                 } catch (IOException ex) {
                     throw ex;

@@ -78,8 +78,6 @@ public class AccessDataThread extends Thread {
             this.hyperTable = new Hypertable();
         else if(this.databaseType==DatabaseType.HBASE)
             this.hbase = new HBase();
-        else
-            this.hbase=new CassandraConnector();
     }
 
     /**
