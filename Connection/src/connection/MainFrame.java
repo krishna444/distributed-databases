@@ -1,14 +1,5 @@
 package connection;
 
-import connection.AccessDataThread;
-import connection.CassandraConnector;
-import connection.DumpFileLoader;
-import connection.GlobalObjects;
-import connection.HBase;
-import connection.Hypertable;
-import connection.MongoDb;
-import connection.ResultExporter;
-import connection.dumpFileCreator;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -235,7 +226,7 @@ public class MainFrame extends JFrame implements Observer {
 
                 int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
                 GlobalObjects.DatabaseType databaseType = null;
-                int fetchLength = 1;
+                int fetchLength = 100;
                 if (group.getSelection().getActionCommand().equals("cassandra")) {
                     databaseType = GlobalObjects.DatabaseType.CASSANDRA;
                 } else if (group.getSelection().getActionCommand().equals("mongodb")) {
