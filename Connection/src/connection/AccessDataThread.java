@@ -6,6 +6,7 @@ import connection.HBase;
 import connection.Hypertable;
 import connection.MongoDb;
 import java.io.IOException;
+import javax.swing.JOptionPane;
 import org.apache.thrift.TException;
 import org.hypertable.thriftgen.ClientException;
 
@@ -44,11 +45,13 @@ public class AccessDataThread extends Thread {
                 break;
             case MONGODB:
                 this.fetchTime = this.mongoDb.fetchData(this.fetchLimit);
+                System.out.println(this.fetchTime);
                 break;
             case HBASE:
                 try {
                     this.fetchTime = this.hbase.fetchData(this.fetchLimit);
                 } catch (IOException ex) {
+                    ex.printStackTrace();
                     //
                 }
                 break;
@@ -56,7 +59,9 @@ public class AccessDataThread extends Thread {
                 try {
                     this.fetchTime = this.hyperTable.fetchData(this.fetchLimit);
                 } catch (ClientException ex) {
+                    ex.printStackTrace();
                 } catch (TException ex) {
+                    ex.printStackTrace();
                 }
                 break;
             default:
