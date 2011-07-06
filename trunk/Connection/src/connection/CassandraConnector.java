@@ -1,15 +1,10 @@
 package connection;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
-import java.util.Random;
-import org.apache.cassandra.avro.ColumnOrSuperColumn;
-import org.apache.cassandra.avro.SlicePredicate;
-import org.apache.cassandra.avro.SliceRange;
 import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
