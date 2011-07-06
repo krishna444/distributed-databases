@@ -1,5 +1,5 @@
 
-package Distributed_Performance;
+package connection;
 
 import au.com.bytecode.opencsv.CSVWriter;
 import java.io.File;

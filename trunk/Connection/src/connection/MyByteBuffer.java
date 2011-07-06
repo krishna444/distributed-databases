@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package Distributed_Performance;
+package connection;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;

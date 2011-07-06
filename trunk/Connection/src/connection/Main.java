@@ -1,5 +1,6 @@
 package Distributed_Performance;
 
+import connection.MainFrame;
 import java.awt.Toolkit;
 import javax.swing.JFrame;
 

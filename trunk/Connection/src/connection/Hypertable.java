@@ -4,7 +4,7 @@
  * This file is distributed under the Apache Software License
  * (http://www.apache.org/licenses/)
  */
-package Distributed_Performance;
+package connection;
 
 import java.io.IOException;
 import java.util.Calendar;

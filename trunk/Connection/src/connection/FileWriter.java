@@ -1,4 +1,4 @@
-package Distributed_Performance;
+package connection;
 
 import java.io.File;
 
