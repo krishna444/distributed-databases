@@ -1,10 +1,10 @@
-package Distributed_Performance;
+package connection;
 
-import Distributed_Performance.CassandraConnector;
-import Distributed_Performance.GlobalObjects.DatabaseType;
-import Distributed_Performance.HBase;
-import Distributed_Performance.Hypertable;
-import Distributed_Performance.MongoDb;
+import connection.CassandraConnector;
+import connection.GlobalObjects.DatabaseType;
+import connection.HBase;
+import connection.Hypertable;
+import connection.MongoDb;
 import java.io.IOException;
 import org.apache.thrift.TException;
 import org.hypertable.thriftgen.ClientException;

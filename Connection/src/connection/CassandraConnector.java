@@ -1,4 +1,4 @@
-package Distributed_Performance;
+package connection;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public class CassandraConnector extends Observable implements Runnable {
 
         try {
             this.resultExporter.open(this.fileName + "." + this.dumpFileSize);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 

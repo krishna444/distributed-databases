@@ -1,4 +1,4 @@
-package Distributed_Performance;
+package connection;
 
 import au.com.bytecode.opencsv.CSVReader;
 import java.util.List;

@@ -1,5 +1,14 @@
-package Distributed_Performance;
+package connection;
 
+import connection.AccessDataThread;
+import connection.CassandraConnector;
+import connection.DumpFileLoader;
+import connection.GlobalObjects;
+import connection.HBase;
+import connection.Hypertable;
+import connection.MongoDb;
+import connection.ResultExporter;
+import connection.dumpFileCreator;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -216,7 +225,7 @@ public class MainFrame extends JFrame implements Observer {
         queryButtonPanel.add(hyperTableRadioButton);
         queryButtonPanel.add(hbaseRadioButton);
         JLabel labelClient = new JLabel("Clients");
-        Object[] values = {10, 100, 500, 1000, 5000, 10000};
+        Object[] values = {10, 20, 30, 50, 70, 100, 200, 300, 500, 1000, 1500, 2000, 5000, 10000};
         final JComboBox comboBox = new JComboBox(values);
         JButton runButton = new JButton("Run");
 
@@ -225,21 +234,21 @@ public class MainFrame extends JFrame implements Observer {
             public void actionPerformed(ActionEvent e) {
 
                 int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
-                GlobalObjects.DatabaseType databaseType=null;
-                int fetchLength=1000;
+                GlobalObjects.DatabaseType databaseType = null;
+                int fetchLength = 100;
                 if (group.getSelection().getActionCommand().equals("cassandra")) {
-                    databaseType=GlobalObjects.DatabaseType.CASSANDRA;
+                    databaseType = GlobalObjects.DatabaseType.CASSANDRA;
                 } else if (group.getSelection().getActionCommand().equals("mongodb")) {
-                    databaseType=GlobalObjects.DatabaseType.MONGODB;
+                    databaseType = GlobalObjects.DatabaseType.MONGODB;
                 } else if (group.getSelection().getActionCommand().equals("hypertable")) {
-                    databaseType=GlobalObjects.DatabaseType.HYPERTABLE;
+                    databaseType = GlobalObjects.DatabaseType.HYPERTABLE;
                 } else if (group.getSelection().getActionCommand().equals("hbase")) {
-                    databaseType=GlobalObjects.DatabaseType.HBASE;
+                    databaseType = GlobalObjects.DatabaseType.HBASE;
                 }
 
-                try{
-                startAccessThreads(databaseType, threads, fetchLength);
-                }catch(Exception ex){
+                try {
+                    startAccessThreads(databaseType, threads, fetchLength);
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
@@ -288,42 +297,47 @@ public class MainFrame extends JFrame implements Observer {
 
     private void startAccessThreads(GlobalObjects.DatabaseType databaseType, int threadsLength, int fetchLimit)
             throws InterruptedException, IOException {
-        ExecutorService executer = Executors.newCachedThreadPool();
-        Collection<AccessDataThread> threads = new ArrayList<AccessDataThread>();
-        for (int i = 0; i < threadsLength; i++) {
-            threads.add(new AccessDataThread(databaseType, fetchLimit));
-        }
-        for (AccessDataThread thread : threads) {
-            executer.execute(thread);
-        }
-        executer.shutdown();
-
-        boolean tasksEnded = executer.awaitTermination(1, TimeUnit.DAYS);
-        if (tasksEnded) {
-            long minimumTime = Long.MAX_VALUE;
-            long averageTime = 0;
-            long maximumTime = Long.MIN_VALUE;
-
-            for (AccessDataThread thread : threads) {
-                long fetchTime = thread.getFetchTime();
-                //get average
-                averageTime += thread.getFetchTime() / threads.size();
-                //get minimum
-                if (fetchTime < minimumTime) {
-                    minimumTime = fetchTime;
-                }
-                if (fetchTime > maximumTime) {
-                    maximumTime = fetchTime;
-                }
-                try {
-                    this.exporter.open(this.fetchFile+"."+databaseType.toString());
-                    this.exporter.writeFetchInfo(databaseType, fetchLimit, averageTime, minimumTime, maximumTime);
-                } catch (IOException ex) {
-                    throw ex;
-                } finally {
-                    this.exporter.close();
-                }
+        try {
+            ExecutorService executer = Executors.newCachedThreadPool();
+            Collection<AccessDataThread> threads = new ArrayList<AccessDataThread>();
+            for (int i = 0; i < threadsLength; i++) {
+                threads.add(new AccessDataThread(databaseType, fetchLimit));
             }
+            for (AccessDataThread thread : threads) {
+                executer.execute(thread);
+            }
+            executer.shutdown();
+
+            boolean tasksEnded = executer.awaitTermination(1, TimeUnit.DAYS);
+            if (tasksEnded) {
+                long minimumTime = Long.MAX_VALUE;
+                long averageTime = 0;
+                long maximumTime = Long.MIN_VALUE;
+
+                for (AccessDataThread thread : threads) {
+                    long fetchTime = thread.getFetchTime();
+                    //get average
+                    averageTime += thread.getFetchTime() / threads.size();
+                    //get minimum
+                    if (fetchTime < minimumTime) {
+                        minimumTime = fetchTime;
+                    }
+                    if (fetchTime > maximumTime) {
+                        maximumTime = fetchTime;
+                    }
+                    try {
+                        this.exporter.open(this.fetchFile + "." + databaseType.toString());
+                        this.exporter.writeFetchInfo(databaseType, fetchLimit, averageTime, minimumTime, maximumTime);
+                    } catch (Exception ex) {
+                        throw ex;
+                    } finally {
+                        this.exporter.close();
+                    }
+                }
+                threads.clear();
+            }
+        } catch (Exception ex) {
+            System.out.println("FFFF:" + ex.toString());
         }
     }
 
