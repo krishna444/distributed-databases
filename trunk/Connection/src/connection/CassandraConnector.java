@@ -200,8 +200,11 @@ public class CassandraConnector extends Observable implements Runnable {
         } catch (InvalidRequestException ex) {
             //
         } catch (UnavailableException ex) {
+            ex.printStackTrace();
         } catch (TimedOutException ex) {
+            ex.printStackTrace();
         } catch (TException ex) {
+            ex.printStackTrace();
         }
 
         for(KeySlice keySlice:keyList){
@@ -210,6 +213,8 @@ public class CassandraConnector extends Observable implements Runnable {
                 System.out.println(col.column.name+":"+col.column.value);
             }            
         }
+        keyList.clear();
+
         executionTime = Calendar.getInstance().getTimeInMillis() - startTime;
         System.out.println("Execution Time:"+executionTime);
         return executionTime;

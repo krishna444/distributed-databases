@@ -5,6 +5,7 @@ import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 import com.mongodb.DB;
 import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
@@ -19,12 +20,14 @@ import java.util.Observable;
 public class MongoDb extends Observable implements Runnable {
 
     //this paramter requires for database operations
-    public DBCollection collection = null;
+    //public DBCollection collection = null;
     private long executionTime;
     private List<String[]> sensorList;
     private int dumpFileSize;
     private String fileName;
     ResultExporter resultExporter;
+    //DBCollection collection;
+    DB db;
 
     /*
      * Constructor
@@ -32,21 +35,25 @@ public class MongoDb extends Observable implements Runnable {
     public MongoDb() {
         this.fileName = "result/mongodb";
         this.resultExporter = new ResultExporter();
-        this.loadCollection();
+        this.loadDB();
     }
 
     /*
      * Loads the collection of mongodb
      */
-    private void loadCollection() {
+    private DBCollection getCollection() {
+        this.loadDB();
+        return this.db.getCollection(GlobalObjects.MongoDb.CollectionName);
+    }
+
+    private void loadDB(){
         Mongo m = null;
         try {
             m = new Mongo(GlobalObjects.MongoDb.Server, GlobalObjects.MongoDb.Port);
         } catch (UnknownHostException ex) {
             ex.printStackTrace();
         }
-        DB db = m.getDB(GlobalObjects.MongoDb.Database);
-        this.collection = db.getCollection(GlobalObjects.MongoDb.CollectionName);
+        this.db=m.getDB(GlobalObjects.MongoDb.Database);
     }
 
     public void insert(List<String[]> sensorList, int fileSize) {
@@ -109,14 +116,14 @@ public class MongoDb extends Observable implements Runnable {
         object.put(GlobalObjects.MongoDb.DateColumn, sensorData.date);
         object.put(GlobalObjects.MongoDb.TemperatureColumn, sensorData.temperature);
         object.put(GlobalObjects.MongoDb.PressureColumn, sensorData.pressure);
-        this.collection.insert(object);
+        this.db.getCollection(GlobalObjects.MongoDb.CollectionName).insert(object);
         this.executionTime += Calendar.getInstance().getTimeInMillis() - startTime;
         return true;
     }
 
     public long fetchData(int fetchLimit) {
         long fetchTime = Calendar.getInstance().getTimeInMillis();
-        DBCursor cursor = this.collection.find();
+        DBCursor cursor = this.db.getCollection(GlobalObjects.MongoDb.CollectionName).find();
         int count = 0;
         while (cursor.hasNext() && count++ < fetchLimit) {
             String date = cursor.next().get(GlobalObjects.MongoDb.DateColumn).toString();

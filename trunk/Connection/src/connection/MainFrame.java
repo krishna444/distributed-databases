@@ -235,7 +235,7 @@ public class MainFrame extends JFrame implements Observer {
 
                 int threads = Integer.parseInt(comboBox.getSelectedItem().toString());
                 GlobalObjects.DatabaseType databaseType = null;
-                int fetchLength = 100;
+                int fetchLength = 1;
                 if (group.getSelection().getActionCommand().equals("cassandra")) {
                     databaseType = GlobalObjects.DatabaseType.CASSANDRA;
                 } else if (group.getSelection().getActionCommand().equals("mongodb")) {
@@ -301,14 +301,19 @@ public class MainFrame extends JFrame implements Observer {
             ExecutorService executer = Executors.newCachedThreadPool();
             Collection<AccessDataThread> threads = new ArrayList<AccessDataThread>();
             for (int i = 0; i < threadsLength; i++) {
-                threads.add(new AccessDataThread(databaseType, fetchLimit));
-            }
-            for (AccessDataThread thread : threads) {
+                AccessDataThread thread = new AccessDataThread(databaseType, fetchLimit);
                 executer.execute(thread);
+                threads.add(thread);
             }
+//            for (AccessDataThread thread : threads) {
+//                executer.execute(thread);
+//            }
             executer.shutdown();
 
             boolean tasksEnded = executer.awaitTermination(1, TimeUnit.DAYS);
+
+            executer.shutdownNow();
+
             if (tasksEnded) {
                 long minimumTime = Long.MAX_VALUE;
                 long averageTime = 0;
@@ -326,7 +331,7 @@ public class MainFrame extends JFrame implements Observer {
                         maximumTime = fetchTime;
                     }
                     try {
-                        this.exporter.open(this.fetchFile + "." + databaseType.toString());
+                        this.exporter.open(this.fetchFile + "_" + threadsLength + "." + databaseType.toString());
                         this.exporter.writeFetchInfo(databaseType, fetchLimit, averageTime, minimumTime, maximumTime);
                     } catch (Exception ex) {
                         throw ex;
